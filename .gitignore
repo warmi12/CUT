@@ -4,4 +4,9 @@ CMakeCache.txt
 CMakeFiles/
 build.ninja
 cmake_install.cmake
+Testing
+CTestTestfile.cmake
+unity
+
 cpu_usage_tracker
+ring_buffer_test
