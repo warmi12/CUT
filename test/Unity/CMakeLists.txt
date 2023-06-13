@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.10)
 
 set(INC_DIRS
-	src
-	extras/fixture/src
-	extras/memory/src
+	src/
+	extras/fixture/src/
+	extras/memory/src/
 )
 
 add_library(unity STATIC 

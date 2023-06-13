@@ -5,12 +5,12 @@ set(CMAKE_C_STANDARD 99)
 
 add_subdirectory(test/ring_buffer)
 
-set(INC_DIRS
+set(INC_DIRS 
 	inc/ring_buffer/	
 )
 
-set(SRCS
-	src/main.c
+set(SRCS 
+	src/main.c 
 	src/ring_buffer/ring_buffer.c	
 )
 
@@ -22,8 +22,19 @@ elseif(CMAKE_C_COMPILER_ID STREQUAL "Clang")
 	message("CLANG IS USING")
 endif()
 
-add_executable(${CMAKE_PROJECT_NAME} ${SRCS})
-include_directories(${CMAKE_PROJECT_NAME} ${INC_DIRS})
+add_executable(${CMAKE_PROJECT_NAME}
+	src/main.c
+	src/ring_buffer/ring_buffer.c
+)
+
+
+include_directories(
+   inc/ring_buffer/
+)
+
+#GCC SHOW WARNING
+#add_executable(${CMAKE_PROJECT_NAME} ${SRCS})
+#include_directories(${CMAKE_PROJECT_NAME} ${INC_DIRS})
 
 enable_testing()
 add_test(ring_buffer_test test/ring_buffer/ring_buffer_test)

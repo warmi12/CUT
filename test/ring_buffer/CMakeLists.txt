@@ -3,7 +3,7 @@ cmake_minimum_required(VERSION 3.10)
 add_subdirectory(../Unity unity)
 
 set(INC_DIRS
-	../../inc/ring_buffer	
+	../../inc/ring_buffer/	
 )
 
 set(SRCS
