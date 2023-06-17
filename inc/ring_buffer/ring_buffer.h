@@ -8,21 +8,29 @@
 #define RING_BUFFER_SIZE 256 			//RING_BUFFER_SIZE must be power of two
 #define RING_BUFFER_MASK (RING_BUFFER_SIZE - 1)
 
+//typedef struct{
+//	char buffer[MAX_LINE_SIZE][20];
+//}buffer_t;
+
+
 typedef struct{
-	uint8_t buffer[RING_BUFFER_SIZE];
-	uint8_t head_idx;
-	uint8_t tail_idx;
+	char* buffer;
+	size_t item_size;
+	int head_idx;
+	int tail_idx;
 }ring_buffer_t;
 
 
-void ring_buffer_init(ring_buffer_t* buffer);
+ring_buffer_t* ring_buffer_init(size_t item_size);
 
-bool ring_buffer_is_full(ring_buffer_t* buffer);
+void ring_buffer_deinit(ring_buffer_t* ring_buffer);
 
-bool ring_buffer_is_empty(ring_buffer_t* buffer);
+bool ring_buffer_is_full(ring_buffer_t* ring_buffer);
 
-void ring_buffer_put(ring_buffer_t* buffer, uint8_t* data);
+bool ring_buffer_is_empty(ring_buffer_t* ring_buffer);
 
-bool ring_buffer_get(ring_buffer_t* buffer, uint8_t* data);
+void ring_buffer_put(ring_buffer_t* ring_buffer, void* item);
+
+bool ring_buffer_get(ring_buffer_t* ring_buffer, void* item);
 
 #endif

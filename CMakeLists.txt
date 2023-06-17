@@ -13,6 +13,7 @@ elseif(CMAKE_C_COMPILER_ID STREQUAL "Clang")
 	message("CLANG IS USING")
 endif()
 
+
 add_executable(${CMAKE_PROJECT_NAME}
 	src/main.c
 	src/ring_buffer/ring_buffer.c
@@ -21,8 +22,8 @@ add_executable(${CMAKE_PROJECT_NAME}
 
 
 include_directories(
-   inc/ring_buffer/
-   inc/reader/
+	inc/ring_buffer/
+	inc/reader/
 )
 
 enable_testing()
