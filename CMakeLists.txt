@@ -18,12 +18,14 @@ add_executable(${CMAKE_PROJECT_NAME}
 	src/main.c
 	src/ring_buffer/ring_buffer.c
 	src/reader/reader.c
+	src/analyzer/analyzer.c
 )
 
 
 include_directories(
 	inc/ring_buffer/
 	inc/reader/
+	inc/analyzer/
 )
 
 enable_testing()

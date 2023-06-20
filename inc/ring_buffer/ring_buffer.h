@@ -8,11 +8,6 @@
 #define RING_BUFFER_SIZE 256 			//RING_BUFFER_SIZE must be power of two
 #define RING_BUFFER_MASK (RING_BUFFER_SIZE - 1)
 
-//typedef struct{
-//	char buffer[MAX_LINE_SIZE][20];
-//}buffer_t;
-
-
 typedef struct{
 	char* buffer;
 	size_t item_size;

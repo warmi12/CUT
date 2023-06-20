@@ -1,7 +1,6 @@
-#include "ring_buffer.h"
 #include <stdlib.h>
 #include <string.h>
-
+#include "ring_buffer.h"
 
 ring_buffer_t* ring_buffer_init(size_t item_size){
 	ring_buffer_t* ring_buffer = (ring_buffer_t* )malloc(sizeof(ring_buffer));

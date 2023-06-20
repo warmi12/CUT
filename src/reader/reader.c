@@ -1,53 +1,83 @@
 #include <string.h>
+#include <unistd.h>
 #include <stdio.h>
+#include <semaphore.h>
 #include "reader.h"
+#include "ring_buffer.h"
 
-//plan dzialania:
-//otwarcie pliku
-//odczyt danych 
-//przypisanie do struktury
-//umieszczenie w ring_buffer
-//
-//init proces? czyli otwarcie pliku? sprawdzenie czy wszystko jest ok?
-//z maina wywolanie funkcji run_reader() lub reader_start()
-//calosc w petli ma dzialac
-//u64 sa te liczby w proc/stat -> max_bytes per line = 214
+extern ring_buffer_t* reader_analyzer_ring_buffer;
 
-FILE* fptr;
-char line[MAX_LINE_SIZE];
-char* parsed_data;
+static FILE* file;
+static char line_from_file[MAX_LINE_SIZE];
+static char ring_buffer_item[MAX_CPU_NUMBER][MAX_NUMBER_OF_VALUES][MAX_SINGLE_STRING_SIZE];
+static char* parsed_data;
 
-void reader_start(){
+static const char* null_str = "NULL";
+
+extern sem_t reader_analyzer_full_sem;
+extern sem_t reader_analyzer_empty_sem;
+
+/*temp solution 
+ *null_str tells how long read data in analyzer thread
+ */
+void init_ring_buffer_item(){
+        for(uint8_t i = 0; i < MAX_CPU_NUMBER; i++){
+                for(uint8_t j = 0; j < MAX_NUMBER_OF_VALUES; j++){
+                        strcpy(&ring_buffer_item[i][j][0], null_str);
+                }
+        }
+}
+
+void* reader_start(void *args){
+	size_t ring_buffer_item_size = sizeof(ring_buffer_item);
+	reader_analyzer_ring_buffer = ring_buffer_init(ring_buffer_item_size);
+
+	init_ring_buffer_item();
+
 	reader_loop();
+
+	return NULL;
 }
 
-void reader_parse_file(){
-	fgets(line, MAX_LINE_SIZE, fptr);
-	while(strstr(line,"intr") == NULL){	
-		parsed_data = strtok(line, " ");
-		while(parsed_data != NULL){
-			printf("%s ", parsed_data);
-			parsed_data = strtok(NULL, " ");
-			//add to ring_buffer
-		}
-		fgets(line,MAX_LINE_SIZE,fptr);
-	}
-}
-
-void reader_loop(){
-	printf("reader\n");
-	//while(1){
-		//czekamy na semafor
-		fptr = fopen("/proc/stat","r");
-		if(fptr != NULL){
+void reader_loop(void){
+	while(1){
+	//	printf("reader: wait for semaphore\n");
+		sem_wait(&reader_analyzer_empty_sem);
+		file = fopen("/proc/stat","r");
+		if(file){
 			reader_parse_file();
-			fclose(fptr);
+	//		printf("reader: added data to buffer\n");
+			fclose(file);
+			sem_post(&reader_analyzer_full_sem);
+			sleep(1);
 		}
 		else{
-			//koniec programu
-			//wyslij do loggera w przyszlosci
+			//info to logger
+			//error
 		}
-		
+	}
+	
+	//remember about it
+	//ring_buffer_deinit(reader_analyzer_ring_buffer);
+}
 
-	//}
+void reader_parse_file(void){
+	uint8_t cpu_number = 0;
+	uint8_t value_number = 0;
+
+	fgets(line_from_file, MAX_LINE_SIZE, file);
+	while(strstr(line_from_file, STOP_DELIMITER) == NULL){ 			//read line until "itr" str 
+		parsed_data = strtok(line_from_file, VALUES_DELIMITER);		//parse space separated data
+		while(parsed_data != NULL){
+			strcpy(&ring_buffer_item[cpu_number][value_number][0], parsed_data); //put parsed data to temp buffer
+			parsed_data = strtok(NULL, " ");
+
+			value_number++;
+		}
+		value_number=0;
+		cpu_number++;
+		fgets(line_from_file, MAX_LINE_SIZE, file);	
+	}
+
+	ring_buffer_put(reader_analyzer_ring_buffer, &ring_buffer_item); 	//put data to ring buffer
 }
