@@ -18,9 +18,9 @@ typedef struct{
 	unsigned long long int total_time;
 }cpu_stats_t;
 
-void* analyzer_start(void *args);
+void* analyzer_start(void* param);
 void analyzer_loop(void);
 void analyze_data(void);
-double calculate_cpu_usage(cpu_stats_t* cpu_stats, cpu_stats_t* cpu_stats_prev);
+void calculate_cpu_usage(cpu_stats_t* cpu_stats, cpu_stats_t* cpu_stats_prev);
 #endif
 

@@ -9,8 +9,9 @@
 #define VALUES_DELIMITER " "
 #define READER_ANALYZER_DELIMITER "NULL"
 
-void* reader_start(void *args);
+void* reader_start(void* param);
 void reader_loop(void);
 void reader_parse_file(void);
-void init_ring_buffer(void);
+
+void get_cpu_number(void);
 #endif
