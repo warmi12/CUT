@@ -8,10 +8,10 @@
 #include "analyzer.h"
 
 extern ring_buffer_t* reader_analyzer_ring_buffer;
-extern ring_buffer_t* analyzer_printer_ring_buffer;
+ring_buffer_t* analyzer_printer_ring_buffer;
 
-static char reader_analyzer_ring_buffer_item[MAX_CPU_NUMBER][MAX_NUMBER_OF_VALUES][MAX_SINGLE_STRING_SIZE];
-//static double analyzer_printer_ring_buffer_item;
+static double analyzer_printer_ring_buffer_item;
+char* reader_analyzer_ring_buffer_item;
 
 extern sem_t full_sem;
 extern sem_t print_sem;
@@ -26,6 +26,9 @@ static double cpu_usage;
 extern uint8_t cpu_number;
 
 void* analyzer_start(void* param){
+
+	reader_analyzer_ring_buffer_item = (char* )malloc(cpu_number * MAX_NUMBER_OF_VALUES * MAX_SINGLE_STRING_SIZE * sizeof(char));
+
 	analyzer_printer_ring_buffer = ring_buffer_init(sizeof(double));
 
 	analyzer_loop();
@@ -36,7 +39,7 @@ void analyzer_loop(void){
         while(1){
        	//      printf("analyzer: wait for semaphore\n");
                 sem_wait(&full_sem);
-		ring_buffer_get(reader_analyzer_ring_buffer, &reader_analyzer_ring_buffer_item);
+		ring_buffer_get(reader_analyzer_ring_buffer, reader_analyzer_ring_buffer_item);
 		analyze_data();
 	//	printf("anayzer: data analyzed\n");
                 sem_post(&print_sem);
@@ -44,17 +47,18 @@ void analyzer_loop(void){
 }
 
 void analyze_data(void){
-
+	printf("ANALIZING DATA\n");
 	for(uint8_t cpu_counter = 0; cpu_counter < cpu_number; cpu_counter++){
 		unsigned long long int* ptr = (unsigned long long int *)&cpu_stats[cpu_counter].user;
 		for(uint8_t value_counter = 1; value_counter < MAX_NUMBER_OF_VALUES; value_counter++){
-			*ptr = (unsigned long long int)atoll(&reader_analyzer_ring_buffer_item[cpu_counter][value_counter][0]);
+			*ptr = (unsigned long long int)atoll(&reader_analyzer_ring_buffer_item[cpu_counter*MAX_NUMBER_OF_VALUES*MAX_SINGLE_STRING_SIZE+MAX_SINGLE_STRING_SIZE*value_counter]);
 			ptr++;
 		}
 		
-        	calculate_cpu_usage(&cpu_stats[cpu_counter], &cpu_stats_prev[cpu_counter]);
-		ring_buffer_put(analyzer_printer_ring_buffer, &cpu_usage);
-		cpu_stats_prev[cpu_counter] = cpu_stats[cpu_counter];
+       		 	calculate_cpu_usage(&cpu_stats[cpu_counter], &cpu_stats_prev[cpu_counter]);
+       			printf("%f\n",cpu_usage);
+			ring_buffer_put(analyzer_printer_ring_buffer, &cpu_usage);
+			cpu_stats_prev[cpu_counter] = cpu_stats[cpu_counter];
 	}
 }
 

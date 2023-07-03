@@ -2,14 +2,15 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <semaphore.h>
+#include <stdlib.h>
 #include "reader.h"
 #include "ring_buffer.h"
 
-extern ring_buffer_t* reader_analyzer_ring_buffer;
+ring_buffer_t* reader_analyzer_ring_buffer;
 
 static FILE* file;
 static char line_from_file[MAX_LINE_SIZE];
-static char ring_buffer_item[MAX_CPU_NUMBER][MAX_NUMBER_OF_VALUES][MAX_SINGLE_STRING_SIZE];
+static char* ring_buffer_item;
 static char* parsed_data;
 
 extern sem_t empty_sem;
@@ -28,10 +29,13 @@ void get_cpu_number(void){
 }
 
 void* reader_start(void* param){
-	size_t ring_buffer_item_size = sizeof(ring_buffer_item);
-	reader_analyzer_ring_buffer = ring_buffer_init(ring_buffer_item_size);
-
+	
 	get_cpu_number();
+
+	ring_buffer_item = (char* )malloc(cpu_number * MAX_NUMBER_OF_VALUES * MAX_SINGLE_STRING_SIZE * sizeof(char));
+        size_t ring_buffer_item_size = cpu_number * MAX_NUMBER_OF_VALUES * MAX_SINGLE_STRING_SIZE;
+		
+        reader_analyzer_ring_buffer = ring_buffer_init(ring_buffer_item_size);
 
 	reader_loop();
 
@@ -47,7 +51,7 @@ void reader_loop(void){
 			reader_parse_file();
 	//		printf("reader: added data to buffer\n");
 			fclose(file);
-			sem_post(&full_sem);
+		sem_post(&full_sem);
 		}
 		else{
 			//info to logger
@@ -64,13 +68,13 @@ void reader_parse_file(void){
 	
 		uint8_t value_counter = 0;
 		while(parsed_data != NULL){
-			strcpy(&ring_buffer_item[cpu_counter][value_counter][0], parsed_data); //put parsed data to temp buffer
+			strcpy(&ring_buffer_item[cpu_counter * MAX_NUMBER_OF_VALUES * MAX_SINGLE_STRING_SIZE + value_counter * MAX_SINGLE_STRING_SIZE], parsed_data);
 			parsed_data = strtok(NULL, " ");
 
 			value_counter++;
 		}
 		fgets(line_from_file, MAX_LINE_SIZE, file);	
 	}
-
-	ring_buffer_put(reader_analyzer_ring_buffer, &ring_buffer_item); 			//put data to ring buffer
+	
+	ring_buffer_put(reader_analyzer_ring_buffer, ring_buffer_item); 			//put data to ring buffer
 }

@@ -10,8 +10,8 @@
 #include "analyzer.h"
 #include "printer.h"
 
-ring_buffer_t* reader_analyzer_ring_buffer;
-ring_buffer_t* analyzer_printer_ring_buffer;
+extern ring_buffer_t* reader_analyzer_ring_buffer;
+extern ring_buffer_t* analyzer_printer_ring_buffer;
 
 sem_t full_sem;
 sem_t empty_sem;
@@ -41,11 +41,13 @@ int main(){
 	sem_init(&print_sem, 0, 0);
 
 	pthread_create(&reader_thread, NULL, reader_start, NULL);
+	sleep(1);
 	pthread_create(&analyzer_thread, NULL, analyzer_start, NULL);
+	sleep(1);
 	pthread_create(&printer_thread, NULL, printer_start, NULL);
 
-//      pthread_join(reader_thread, NULL);
-//      pthread_join(analyzer_thread, NULL);
+// 	pthread_join(reader_thread, NULL);
+//    	pthread_join(analyzer_thread, NULL);
 //	pthread_join(printer_thread, NULL);
 
 	while(!done){
