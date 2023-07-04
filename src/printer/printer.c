@@ -1,25 +1,28 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <semaphore.h>
 #include <unistd.h>
+#include "threads_info.h"
 #include "ring_buffer.h"
 #include "printer.h"
 
+extern ring_buffer_t* analyzer_printer_ring_buffer;
+
 extern sem_t print_sem;
 extern sem_t empty_sem;
-extern ring_buffer_t* analyzer_printer_ring_buffer;
+extern volatile sig_atomic_t done;
 
 extern uint8_t cpu_number;
 static double cpu_usage = 0;
 
-void * printer_start(void *param){
-	
-	printer_loop();
-	return NULL;
-}
+//void printer_init(void){
+//	
+//}
 
-void printer_loop(void){
-	while(1){
+void* printer_loop(void* param){
+
+	UNUSED(param);
+
+	while(!done){
 		//printf("printer: wait for semaphore\n");
 		sem_wait(&print_sem);	
 		system("clear");
@@ -35,7 +38,9 @@ void printer_loop(void){
 		sleep(1);
 		sem_post(&empty_sem);
 
-	}	
+	}
+
+	pthread_exit(NULL);
 }
 
 

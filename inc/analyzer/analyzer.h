@@ -1,6 +1,8 @@
 #ifndef ANALYZER_H
 #define ANALYZER_H
 
+#include "ring_buffer.h"
+
 typedef struct{
 	unsigned long long int user;
 	unsigned long long int nice;
@@ -18,8 +20,11 @@ typedef struct{
 	unsigned long long int total_time;
 }cpu_stats_t;
 
-void* analyzer_start(void* param);
-void analyzer_loop(void);
+extern ring_buffer_t* analyzer_printer_ring_buffer;
+
+void analyzer_init(void);
+void analyzer_deinit(void);
+void* analyzer_loop(void* param);
 void analyze_data(void);
 void calculate_cpu_usage(cpu_stats_t* cpu_stats, cpu_stats_t* cpu_stats_prev);
 #endif
